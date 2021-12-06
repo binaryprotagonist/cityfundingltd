@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
+
+class GoCardLessController extends Controller
+{
+
+    public $client = null;
+
+    public function __construct(){
+        $this->client = new \GoCardlessPro\Client(array(
+            'access_token' => 'sandbox_gl4UL2GMx2I1iyD-hBwHVUs2WC3s8Y4TCdc_Ql5s',
+            'environment'  => \GoCardlessPro\Environment::SANDBOX
+          ));
+    }
+
+    public function list(){
+       $list = $this->client->subscriptions()->list();
+       
+       $list = json_encode($list,true);
+       
+       return $list;
+
+    }
+
+    public function mandate(){
+  
+        $response = $this->client->mandates()->create([
+            "params" =>  ["scheme" => "Free",
+                         "metadata" => ["contract" => "ABCD1234"],
+                         "links" => []
+                         ]
+          ]);
+
+          $response = json_encode($response,true);
+
+          return $response;
+    }
+
+    public function subscribe(){
+
+         $response = $this->client->subscriptions()->create([
+            "params" => [
+                            "amount" => 100,
+                            "currency" => "GBP",
+                            "name" => "Starter",
+                            "interval_unit" => "monthly",
+                            "day_of_month" => 1,
+                            "metadata" => ["order_no" => "ABCD1234"],
+                             "links" => ["mandate" => "MD000J3TTG7ET8"]
+                         ]
+          ]);
+
+          $response = json_encode($response,true);
+          
+          return $response;
+
+    }
+
+    public function createCustomer(){
+          
+          $response = $this->client->customers()->create([
+            "params" => [ 
+                          "email" => "shivamyadav8959@gmail.com",
+                          "given_name" => "Shivam",
+                          "family_name" => "Yadav",
+                          "country_code" => "GB"
+                         ]
+          ]);
+
+          $response = json_encode($response,true);
+
+          return $response;
+
+    }
+
+    public function createBankAccount(){
+
+       $response =  $this->client->customerBankAccounts()->create([
+            "params" => ["account_number" => "55779911",
+                         "branch_code" => "200000",
+                         "account_holder_name" => "Frank Osborne",
+                         "country_code" => "GB",
+                         "links" => ["customer" => "CU000JMF93N5GR"]]
+          ]);
+
+          $response = json_encode($response,true);
+
+          return $response;
+
+    }
+
+    public function hostMandate(){
+
+        $redirectFlow = $this->client->redirectFlows()->create([
+            "params" => [
+                // This will be shown on the payment pages
+                "description" => "Wine boxes",
+                // Not the access token
+                "session_token" => Session::getId(),
+                "success_redirect_url" => url('/gocardless/host/mandate/success'),
+                // Optionally, prefill customer details on the payment page
+                "prefilled_customer" => [
+                  "given_name" => "Tim",
+                  "family_name" => "Rogers",
+                  "email" => "tim@gocardless.com",
+                  "address_line1" => "338-346 Goswell Road",
+                  "city" => "London",
+                  "postal_code" => "EC1V 7LQ"
+                ]
+            ]
+        ]);
+        
+        // Hold on to this ID - you'll need it when you
+        // "confirm" the redirect flow later
+        print("ID: " . $redirectFlow->id . "<br />");
+        
+        print("URL: " . $redirectFlow->redirect_url);
+    }
+
+     public function hostMandateSuccess(Request $request){
+          
+        $redirectFlow = $this->client->redirectFlows()->complete(
+            $request->redirect_flow_id, //The redirect flow ID from above.
+            ["params" => ["session_token" => Session::getId() ]]
+        );
+
+        print("Mandate: " . $redirectFlow->links->mandate . "<br />");
+        // Save this mandate ID for the next section.
+        print("Customer: " . $redirectFlow->links->customer . "<br />");
+
+        // Display a confirmation page to the customer, telling them their Direct Debit has been
+        // set up. You could build your own, or use ours, which shows all the relevant
+        // information and is translated into all the languages we support.
+        print("Confirmation URL: " . $redirectFlow->confirmation_url . "<br />");
+        
+     }
+
+}
