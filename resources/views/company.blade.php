@@ -2,35 +2,23 @@
 @section('content')
     <section id="portfoliopage">
       <div class="container">
-        <div class="wrapper">
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th scope="col">Name</th></th>
-                <th scope="col">Status</th>
-                <th scope="col">Address</th>
-                <th scope="col">Role</th>
-                <th scope="col">Appointed on</th>
-                <th scope="col">Nationality</th>
-                <th scope="col">Occupation</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if($officer->total_results > 0)
-                @foreach($officer->items as $key => $item)
-                    <tr>
-                        <td><a href="{{route('company',$company->company_number)}}">{{$item->name}}</a></td>
-                        <td>{{$item->appointed_to->company_status}}</td>
-                        <td>{{$item->address->address_line_1 .','. $item->address->locality .','. $item->address->postal_code .','. $item->address->country }}</td>
-                        <td>{{$item->officer_role}}</td>
-                        <td>{{$item->appointed_on}}</td>
-                        <td>{{$item->nationality}}</td>
-                        <td>{{$item->occupation}}</td>
-                    </tr>
-                @endforeach
-              @endif
-            </tbody>
-          </table>
+        <div class="row">
+          <div class="col-md-6">
+             <p>Company Name</p>
+            <b>{{$company->company_name}}</b>
+            <p>Registered office address</p>
+            <b>{{ $company->registered_office_address->address_line_1 }} ,{{ $company->registered_office_address->locality }} , {{ $company->registered_office_address->postal_code }}</b>
+            <p>Company status</p>
+            <b>{{ $company->company_status }}</b>
+          </div>
+          <div class="col-md-6">
+             <p>Dissolved on</p>
+            <b>{{ $company->date_of_cessation }}</b>
+            <p>Company type</p>
+            <b>{{ $company->type }}</b>
+            <p>Incorporated on</p>
+            <b>{{ $company->date_of_creation }}</b>
+          </div>
         </div>
       </div>
     </section>

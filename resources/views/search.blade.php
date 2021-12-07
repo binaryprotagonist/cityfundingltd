@@ -58,13 +58,19 @@
             <nav aria-label="Page navigation example">
               <ul class="pagination">
                   @php
-                  $total_pages = ceil($companies->total_results / $companies->items_per_page);  
+                  $total_pages  = ceil($companies->total_results / $companies->items_per_page);  
+                  $dots = false;
                   for ($i=1; $i<=$total_pages; $i++) {
-                    if ($i==$companies->page_number) {
+                    if($i <= 11){
+                      if ($i==$companies->page_number){
                         echo '<li class="page-item active"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.$i.'</a></li>';
-                    }            
-                    else  {
-                        echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.$i.'</a></li>';
+                      }else{
+                        if ($i <= 10) { 
+                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.$i.'</a></li>';
+                        } elseif ($i > 10) {
+                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.__("Next").'</a></li>';
+                        }
+                      }
                     }
                   }  
                   @endphp

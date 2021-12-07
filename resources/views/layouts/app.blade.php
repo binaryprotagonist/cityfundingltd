@@ -49,7 +49,7 @@
               <a
                 class="nav-link home"
                 aria-current="page"
-                href="portfoliopage.html"
+                href="{{route('portfolio')}}"
                 >{{__('Back to Portfolio')}}</a
               >
             </li>

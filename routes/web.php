@@ -42,6 +42,8 @@ Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
 Route::get('/officers/{id}/appointments', [HomeController::class, 'officers'])->name('officers');
 Route::get('/company/{id}', [HomeController::class, 'company'])->name('company');
+Route::get('/company/export/{id?}', [HomeController::class, 'export'])->name('export');
+Route::get('/portfolio', [HomeController::class, 'portfolio'])->name('portfolio');
 
 
 
