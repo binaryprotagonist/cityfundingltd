@@ -1,7 +1,7 @@
   @extends('layouts.app')
   @section('content')
     <!-- Setting Page -->
-    <section id="setting">
+    <section id="setting" class="pb-5">
       <div class="container">
         <div class="row">
           <div class="col-md-2">
@@ -28,6 +28,17 @@
                   <img src="{{Auth::user()->profileImageUrl}}" alt="{{Auth::user()->name}}" />
                   <i class="fa fa-pencil" id="btn-upload-profile-image"></i>
                 </div>
+
+                <div  class="profile-edit">
+                  <span  class="  items-center">
+                    <button  class="btn" id="edit-profile">Edit</button>
+                    </span>
+                    <span  class="  items-center">
+                    <button  class="btn" id="edit-profile">{{__('Save')}}</button>
+                    <button  class="btn" id="edit-profile">Cancel</button>
+                    </span>
+                   
+                  </div>
                 <div class="form-group">
                   <div class="name">
                     <label for="name">{{__('Your name')}}</label>
@@ -35,6 +46,7 @@
                       type="text"
                       class="input-group"
                       name="first_name"
+                     
                       value="{{Auth::user()->first_name}}"
                       placeholder="{{__('First Name')}}"
                     />
@@ -47,6 +59,7 @@
                       name="last_name"
                       value="{{Auth::user()->last_name}}"
                       placeholder="{{__('Last Name')}}"
+                     
                     />
                   </div>
                 </div>
@@ -59,6 +72,7 @@
                       class="input-group"
                       value="{{Auth::user()->email}}"
                       placeholder="{{__('Email Address')}}"
+                      
                     />
                   </div>
                   <div class="name">
@@ -69,18 +83,57 @@
                       name="phone"
                       value="{{Auth::user()->phone}}"
                       placeholder="{{__('Mobile Number')}}"
+                     
                     />
                   </div>
                 </div>
-                <div class="btn-group">
+                <!-- <div class="btn-group">
                   <button type="submit" class="btn-primary">{{__('Save Details')}}</button>
-                </div>
+                </div> -->
               </form>
+              <div class="password-reset">
+              <div  class="flex mb-2">
+                <span  class="password-setting mb-2"> Password Settings</span>
+                <span  class="ms-auto  items-center">
+                <i class="fa fa-pencil" id="btn-password-change"></i>
+                </span>
+                <span  class="ms-auto  items-center">
+                <i class="fa fa-check" id="btn-password-update"></i>
+                <i class="fa fa-times" id="btn-password-cancel"></i>
+                </span>
+              </div>
+             
+              <div class="form-group">
+                  <div class="name">
+                    <label for="name">{{__('New Password')}}</label>
+                    <input
+                      type="password"
+                      name="password"
+                      class="input-group"
+                      value="{{Auth::user()->email}}"
+                      placeholder="{{__('New Password')}}"
+                     
+                    />
+                  </div>
+                  <div class="name">
+                    <label for="name">{{__('Confirm Password')}}</label>
+                    <input
+                    type="password"
+                      class="input-group"
+                      name="cpassword"
+                      value="{{Auth::user()->phone}}"
+                      placeholder="{{__('Confirm Password')}}"
+                     
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
+  
     <!-- Login Modal -->
       <div class="modal fade" id="cropperModal" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
         <div class="modal-dialog">
