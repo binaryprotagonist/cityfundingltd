@@ -30,12 +30,12 @@
                 </div>
 
                 <div  class="profile-edit">
-                  <span  class="  items-center">
+                  <span  class="  items-center" id="edit-profilediv">
                     <button  class="btn" id="edit-profile">Edit</button>
                     </span>
-                    <span  class="  items-center">
-                    <button  class="btn" id="edit-profile">{{__('Save')}}</button>
-                    <button  class="btn" id="edit-profile">Cancel</button>
+                    <span  class="items-center" id="save-cancel">
+                    <button  class="btn" id="save-profile">{{__('Save')}}</button>
+                    <button  class="btn" id="cancel-profile">Cancel</button>
                     </span>
                    
                   </div>
@@ -97,7 +97,7 @@
                 <span  class="ms-auto  items-center">
                 <i class="fa fa-pencil" id="btn-password-change"></i>
                 </span>
-                <span  class="ms-auto  items-center">
+                <span  class="ms-auto  items-center" id="password-update-cancel">
                 <i class="fa fa-check" id="btn-password-update"></i>
                 <i class="fa fa-times" id="btn-password-cancel"></i>
                 </span>
@@ -243,6 +243,48 @@
                 }
            });
        });
+      //  varibale define for button Toggle
+       const editProfile = document.getElementById("edit-profile")
+       const savecancelDiv = document.getElementById("save-cancel")
+       const saveProfile = document.getElementById("save-profile")
+       const cancelProfile = document.getElementById("cancel-profile")
+       const passwordChange = document.getElementById("btn-password-change")
+       const passwordUpdateCancel = document.getElementById("password-update-cancel")
+       const passwordUpdate = document.getElementById("btn-password-update")
+       const passwordCancel = document.getElementById("btn-password-cancel")
+
+       editProfile.addEventListener("click", editHandler)
+       saveProfile.addEventListener("click", saveHandler)
+       cancelProfile.addEventListener("click", cancelHandler)
+       passwordChange.addEventListener("click", chnageHandler)
+       passwordUpdate.addEventListener("click", updateHandler)
+       passwordCancel.addEventListener("click", pcancelHandler)
+function editHandler(){
+  editProfile.classList.add('d-none')
+  savecancelDiv.classList.add('d-block')
+}
+function saveHandler(){
+  savecancelDiv.classList.add('d-none')
+  editProfile.classList.remove('d-none')
+  
+}
+function cancelHandler(){
+  savecancelDiv.classList.add('d-none')
+  editProfile.classList.remove('d-none')
+ 
+}
+function chnageHandler(){
+  passwordChange.classList.add('d-none')
+  passwordUpdateCancel.classList.add('d-inline-block')
+}
+function updateHandler(){
+  passwordUpdateCancel.classList.add('d-none')
+  passwordChange.classList.remove('d-none')
+}
+function pcancelHandler(){
+  passwordUpdateCancel.classList.add('d-none')
+  passwordChange.classList.remove('d-none')
+}
     </script>
   @endpush
   

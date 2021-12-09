@@ -1071,3 +1071,14 @@ footer a:hover {
     font-size: 0.875em;
     color: #dc3545 !important;
 }
+/* button Toggle css */
+/* #save-profile,
+#cancel-profile {
+    display: none;
+} */
+#save-cancel {
+    display: none;
+}
+#password-update-cancel {
+    display: none;
+}
