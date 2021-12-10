@@ -1072,13 +1072,6 @@ footer a:hover {
     color: #dc3545 !important;
 }
 /* button Toggle css */
-/* #save-profile,
-#cancel-profile {
-    display: none;
-} */
-#save-cancel {
-    display: none;
-}
-#password-update-cancel {
-    display: none;
+.hidden {
+    display: none !important;
 }
