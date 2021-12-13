@@ -42,7 +42,7 @@
                     <label for="name">{{__('Your name')}}</label>
                     <input
                       type="text"
-                      class="input-group"
+                      class="input-group  btn-disabled"
                       name="first_name"
                       value="{{Auth::user()->first_name}}"
                       placeholder="{{__('First Name')}}"
@@ -53,7 +53,7 @@
                     <label for="name"></label>
                     <input
                       type="text"
-                      class="input-group"
+                      class="input-group btn-disabled"
                       name="last_name"
                       value="{{Auth::user()->last_name}}"
                       placeholder="{{__('Last Name')}}"
@@ -67,7 +67,7 @@
                     <input
                       type="email"
                       name="email"
-                      class="input-group"
+                      class="input-group btn-disabled"
                       value="{{Auth::user()->email}}"
                       placeholder="{{__('Email Address')}}"
                       readonly
@@ -77,7 +77,7 @@
                     <label for="name">{{__('Mobile Number')}}</label>
                     <input
                       type="number"
-                      class="input-group"
+                      class="input-group btn-disabled"
                       name="phone"
                       value="{{Auth::user()->phone}}"
                       placeholder="{{__('Mobile Number')}}"
