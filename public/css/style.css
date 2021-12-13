@@ -1071,3 +1071,7 @@ footer a:hover {
     font-size: 0.875em;
     color: #dc3545 !important;
 }
+
+.btn-profile-save,.btn-profile-cancel,.btn-passwordd-save,.btn-password-cancel,.change-password-wrapper{
+   display: none;
+}

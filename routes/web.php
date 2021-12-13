@@ -26,6 +26,7 @@ Route::post('ajax/user/register', [AjaxController::class, 'userRegister'])->name
 Route::post('ajax/user/login', [AjaxController::class, 'userLogin'])->name('ajax.userLogin');
 Route::post('ajax/user/logout', [AjaxController::class, 'userLogout'])->name('ajax.userLogout');
 Route::post('ajax/user/update/profile', [AjaxController::class, 'userUpdateProfile'])->name('ajax.userUpdateProfile');
+Route::put('/change/password', [AjaxController::class, 'changePassword'])->name('ajax.changePassword');
 
 /**
  * Google Auth Route's

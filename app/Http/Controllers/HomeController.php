@@ -153,7 +153,10 @@ class HomeController extends Controller
                                                    ->orWhereRaw("MATCH(proprietor_3_address_1) AGAINST('$street' IN BOOLEAN MODE)")
                                                    ->orWhereRaw("MATCH(proprietor_4_address_1) AGAINST('$street' IN BOOLEAN MODE)");
                                          })
-                                         ->first();
+                                         ->get();
+           print_r($registeredCompany);
+           die;
+                                         return $registeredCompany;
         
           $ownerShipData = $this->fetch('https://api.companieshouse.gov.uk/company/'.$item->appointed_to->company_number.'/persons-with-significant-control','GET',[],$header);
           $ownerShip = $ownerShipData->items[0]->natures_of_control[0] ?? NULL;
