@@ -98,4 +98,25 @@ class AjaxController extends Controller
             }
             return ['status' => 'failed' , 'message' => __('Failed to update profile') ];
     }
+
+    public function changePassword(Request $request){
+
+      $rules = [
+        'password' => 'required|string|min:6|confirmed',
+      ];
+
+      $validator = \Validator::make($request->all(), $rules);
+    
+      if($validator->fails()){
+         return array('status' => 'error' , 'message' => __('failed to update profile') , 'errors' => $validator->errors());
+      }
+
+      $user = User::find(\Auth::id());
+      $user->password = \Hash::make($request->password);
+      if($user->save()){
+        return ['status' => 'success' , 'message' => __('Password changed successful') ];
+      }
+        return ['status' => 'failed' , 'message' => __('Failed to change password') ];
+        
+    }
 }

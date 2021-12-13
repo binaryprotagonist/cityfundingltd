@@ -30,13 +30,11 @@
                 </div>
 
                 <div  class="profile-edit">
-                  <span  class="  items-center" id="edit-profilediv">
-                    <button  class="btn" id="edit-profile">Edit</button>
-                    </span>
-                    <span  class="items-center hidden" id="save-cancel">
-                    <button  class="btn" id="save-profile">{{__('Save')}}</button>
-                    <button  class="btn" id="cancel-profile">Cancel</button>
-                    </span>
+                  <span  class="  items-center">
+                    <button  class="btn btn-profile-edit">{{__('Edit')}}</button>
+                    <button type="submit" class="btn btn-profile-save" >{{__('Save')}}</button>
+                    <button  class="btn btn-profile-cancel" >{{__('Cancel')}}</button>
+                  </span>
                    
                   </div>
                 <div class="form-group">
@@ -46,9 +44,9 @@
                       type="text"
                       class="input-group  btn-disabled"
                       name="first_name"
-                     
                       value="{{Auth::user()->first_name}}"
                       placeholder="{{__('First Name')}}"
+                      readonly
                     />
                   </div>
                   <div class="name">
@@ -59,7 +57,7 @@
                       name="last_name"
                       value="{{Auth::user()->last_name}}"
                       placeholder="{{__('Last Name')}}"
-                     
+                      readonly
                     />
                   </div>
                 </div>
@@ -72,7 +70,7 @@
                       class="input-group btn-disabled"
                       value="{{Auth::user()->email}}"
                       placeholder="{{__('Email Address')}}"
-                      
+                      readonly
                     />
                   </div>
                   <div class="name">
@@ -83,7 +81,7 @@
                       name="phone"
                       value="{{Auth::user()->phone}}"
                       placeholder="{{__('Mobile Number')}}"
-                     
+                     readonly
                     />
                   </div>
                 </div>
@@ -93,39 +91,37 @@
               </form>
               <div class="password-reset">
               <div  class="flex mb-2">
-                <span  class="password-setting mb-2"> Password Settings</span>
+                <span  class="password-setting mb-2">{{__('Password Setting')}}</span>
                 <span  class="ms-auto  items-center">
-                <i class="fa fa-pencil" id="btn-password-change"></i>
-                </span>
-                <span  class="ms-auto  items-center hidden" id="password-update-cancel">
-                <i class="fa fa-check" id="btn-password-update"></i>
-                <i class="fa fa-times" id="btn-password-cancel"></i>
+                  <i class="fa fa-pencil btn-password-change" id="btn-password-change"></i>
+                  <i class="fa fa-check btn-password-save" id="btn-password-update"></i>
+                  <i class="fa fa-times btn-password-cancel" id="btn-password-cancel"></i>
                 </span>
               </div>
              
-              <div class="form-group hidden" id="password-input-field">
-                  <div class="name">
-                    <label for="name">{{__('New Password')}}</label>
-                    <input
+              <div class="form-group change-password-wrapper">
+                  <form id="changePasswordForm">
+                    <div class="name">
+                      <label for="name">{{__('New Password')}}</label>
+                      <input
+                        type="password"
+                        name="password"
+                        class="input-group"
+                        value=""
+                        placeholder="{{__('New Password')}}"
+                      />
+                    </div>
+                    <div class="name">
+                      <label for="name">{{__('Confirm Password')}}</label>
+                      <input
                       type="password"
-                      name="password"
-                      class="input-group"
-                      value="{{Auth::user()->email}}"
-                      placeholder="{{__('New Password')}}"
-                     
-                    />
-                  </div>
-                  <div class="name">
-                    <label for="name">{{__('Confirm Password')}}</label>
-                    <input
-                    type="password"
-                      class="input-group"
-                      name="cpassword"
-                      value="{{Auth::user()->phone}}"
-                      placeholder="{{__('Confirm Password')}}"
-                     
-                    />
-                  </div>
+                        class="input-group"
+                        name="password_confirmation"
+                        value=""
+                        placeholder="{{__('Confirm Password')}}"
+                      />
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
@@ -174,6 +170,47 @@
     <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
     <script>
 
+       $('.btn-profile-save').hide();
+       $('.btn-profile-cancel').hide();
+       $('.btn-password-cancel').hide();
+       $('.btn-password-save').hide();
+       $('.change-password-wrapper').hide();
+
+       $('.btn-profile-edit').on('click',function(e){
+            e.preventDefault();
+            $('.btn-profile-save').show();
+            $('.btn-profile-cancel').show();
+            $('.btn-profile-edit').hide();
+            $('#updateProfileForm input').removeAttr('readonly');
+       });
+
+      $('.btn-profile-cancel').on('click',function(e){
+        e.preventDefault();
+        $('.btn-profile-save').hide();
+        $('.btn-profile-cancel').hide();
+        $('.btn-profile-edit').show();
+        $('#updateProfileForm input').attr('readonly','readonly');
+        $('#updateProfileForm')[0].reset();
+      });
+
+      $('.btn-password-change').on('click',function(e){
+        e.preventDefault();
+        $('.btn-password-save').show();
+        $('.btn-password-cancel').show();
+        $('.btn-password-change').hide();
+        $('.change-password-wrapper').show();
+        $('#changePasswordForm')[0].reset();
+      });
+
+       $('.btn-password-cancel').on('click',function(e){
+        e.preventDefault();
+        $('.btn-password-save').hide();
+        $('.btn-password-cancel').hide();
+        $('.btn-password-change').show();
+        $('.change-password-wrapper').hide();
+        $('#changePasswordForm')[0].reset();
+      });
+
        $('#btn-upload-profile-image').on('click',function(e){
          e.preventDefault();
          $('#profile-input-file').trigger('click');
@@ -218,6 +255,7 @@
        */
        $('#updateProfileForm').on('submit',function(e){
            e.preventDefault();
+
            let form  =  $(this);
            let modal =  $('#updateProfileForm');
            let data  = new FormData(this);
@@ -232,6 +270,10 @@
                    $('.profile-details').find('.fullname').text(response.data.name);
                    $('.profile-details').find('.mail small').text(response.data.email);
                    toastr.success(response.message);
+                  $('.btn-profile-save').hide();
+                  $('.btn-profile-cancel').hide();
+                  $('.btn-profile-edit').show();
+                  $('#updateProfileForm input').attr('readonly','readonly');
                 }
                 if(response.status == 'failed'){
                    toastr.error(response.message);
@@ -243,69 +285,36 @@
                 }
            });
        });
-      //  varibale define for button Toggle
-       const editProfile = document.getElementById("edit-profile")
-       const savecancelDiv = document.getElementById("save-cancel")
-       const saveProfile = document.getElementById("save-profile")
-       const cancelProfile = document.getElementById("cancel-profile")
-       const passwordChange = document.getElementById("btn-password-change")
-       const passwordUpdateCancel = document.getElementById("password-update-cancel")
-       const passwordUpdate = document.getElementById("btn-password-update")
-       const passwordCancel = document.getElementById("btn-password-cancel")
-       const passwordInputField = document.getElementById("password-input-field")
-       var btnDisabled = document.querySelectorAll(".btn-disabled")
-       editProfile.addEventListener("click", editHandler)
-       saveProfile.addEventListener("click", saveHandler)
-       cancelProfile.addEventListener("click", cancelHandler)
-       passwordChange.addEventListener("click", changeHandler)
-       passwordUpdate.addEventListener("click", updateHandler)
-       passwordCancel.addEventListener("click", pcancelHandler)
-      //  Disable Input Box 
-      function trueBtn(){
-        btnDisabled[0].disabled = true;
-       btnDisabled[1].disabled = true;
-       btnDisabled[2].disabled = true;
-       btnDisabled[3].disabled = true;
-      }
-      trueBtn()
-      // Enable Input Box
-       function falseBtn(){
-        btnDisabled[0].disabled=false;
-        btnDisabled[1].disabled = false;
-        btnDisabled[2].disabled = false;
-        btnDisabled[3].disabled = false;
-       }
-function editHandler(){
-  editProfile.classList.add('hidden')
-  savecancelDiv.classList.remove('hidden')
- falseBtn()
-}
-function saveHandler(){
-  savecancelDiv.classList.add('hidden')
-  editProfile.classList.remove('hidden')
-  trueBtn()
- 
-}
-function cancelHandler(){
-  savecancelDiv.classList.add('hidden')
-  editProfile.classList.remove('hidden')
-  trueBtn()
-}
-function changeHandler(){
-  passwordChange.classList.add('hidden')
-  passwordUpdateCancel.classList.remove('hidden')
-  passwordInputField.classList.remove('hidden')
-}
-function updateHandler(){
-  passwordUpdateCancel.classList.add('hidden')
-  passwordInputField.classList.add('hidden')
-  passwordChange.classList.remove('hidden')
-}
-function pcancelHandler(){
-  passwordUpdateCancel.classList.add('hidden')
-  passwordInputField.classList.add('hidden')
-  passwordChange.classList.remove('hidden')
-}
+
+
+       /**
+       * Change Password
+       */
+       $('#btn-password-update').on('click',function(e){
+           e.preventDefault();
+           let form  =  $('#changePasswordForm');
+           let data  =  form.serialize();
+           ajaxCall("{{route('ajax.changePassword')}}",'PUT',data,false)
+           .then((response) => {
+                form.find('p.invalid-feedback').remove();
+                if(response.status == 'success'){
+                  $('.btn-password-save').hide();
+                  $('.btn-password-cancel').hide();
+                  $('.btn-password-change').show();
+                  $('.change-password-wrapper').hide();
+                  $('#changePasswordForm')[0].reset();
+                   toastr.success(response.message);
+                }
+                if(response.status == 'failed'){
+                   toastr.error(response.message);
+                }
+                if(response.status == 'error'){
+                     $.each(response.errors, function(key, val) {
+                         form.find('[name='+key+']').after('<p class="invalid-feedback">'+val+'</p>');
+                     });
+                }
+           });
+       });
     </script>
   @endpush
   
