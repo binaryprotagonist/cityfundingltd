@@ -141,7 +141,7 @@
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light p-4">
+    <nav class="navbar navbar-expand-lg sticky-top navbar-light p-4">
       <div class="container">
         <a class="navbar-brand" href="{{route('index')}}">{{__('Logo')}}</a>
         <button
@@ -222,7 +222,7 @@
       <!-- Login Modal -->
       <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-          <div class="modal-content">
+          <div class="modal-content mlogin">
             <div class="modal-header">
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -232,7 +232,7 @@
                   <span>{{__('Don\'t have account?')}}</span>
                   <a data-bs-target="#signupModal" data-bs-toggle="modal" >{{__('Create account')}}</a>
                   <div class="formcontents">
-                    <h1 class="mb-3 mt-3">{{__('Login to your account')}}</h1>
+                    <h1 class="mb-2 mt-2">{{__('Login to your account')}}</h1>
                     <p class="mb-3">
                       {{__('Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus
                       doloremque natus')}} 
@@ -255,7 +255,7 @@
                       <input
                         type="password"
                         class="form-control"
-                        placeholder="password"
+                        placeholder="Password"
                         name="password"
                         autocomplete="off"
                       />
@@ -296,7 +296,7 @@
                   <span>{{__('Have an account?')}}</span>
                   <a data-bs-target="#loginModal" data-bs-toggle="modal">{{__('Sign In')}}</a>
                   <div class="formcontents">
-                    <h1 class="mb-3 mt-3">{{__('Welcome to City Funding')}}</h1>
+                    <h1 class="mb-2 mt-2">{{__('Welcome to City Funding')}}</h1>
                     <p class="mb-3">
                       {{__('Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus
                       doloremque natus')}} 
@@ -319,7 +319,7 @@
                       <input
                         type="password"
                         class="form-control"
-                        placeholder="{{__('password')}}"
+                        placeholder="{{__('Password')}}"
                         name="password"
                         autocomplete="off"
                       />
@@ -356,9 +356,18 @@
         </div>
       </div>
         <!-- End Signup Modal -->
+
       @endif
       @section('content')
       @show
+      <footer class="p-4">
+      <div class="flex flex-row justify-center text-center py-6">
+        <span class="SF-Pro-Display-Bold">Copyright </span>
+        <a  href="#" target="_blank" class="Gilory-Bold mx-1">@ City funding. </a>
+        <span  class="Gilory-Bold me-1"> Made with love by </span>
+        <a  href="https://www.braininventory.com" target="_blank" class="Gilory-Bold"> Brain Inventory.</a>
+      </div>
+    </footer>
     <script src="{{ asset('/') }}js/bootstrap.min.js"></script>
     <script src="{{ asset('/') }}js/toastr.min.js"></script>
     <script>
