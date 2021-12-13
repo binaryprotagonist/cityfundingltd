@@ -5,7 +5,7 @@
         <div class="content">
           <h3>Lorem ipsum dolor sit amet.</h3>
           <div class="downloadbutton">
-              <a href="{{route('export')}}"><i class="fa fa-download"></i> {{__('Download')}}</a>
+              <a href="{{route('exportPorfolio')}}"><i class="fa fa-download"></i> {{__('Download')}}</a>
           </div>
       </div>
     </div>
@@ -41,12 +41,12 @@
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
+                        <td>{{$item->purchase_price}}</td>
+                        <td>{{$item->purchase_date}}</td>
                         <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td>{{$item->property_type}}</td>
                         <td>{{$item->company_name}}</td>
-                        <td>-</td>
+                        <td>{{$item->ownership}}</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>

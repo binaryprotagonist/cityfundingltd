@@ -9,6 +9,8 @@ use App\Exports\CompanyExport;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUser;
+use App\Models\PricePaid;
+use App\Models\LandAndRegisteredCompany;
 use Auth;
 use DB;
 
@@ -21,7 +23,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth')->except(['index','search','officers','company']);
+        $this->middleware('auth')->except(['index','search','officers','company','exportOfficer','exportCompany','exportPorfolio','importFile','importFileStore']);
     }
 
     /**
@@ -41,6 +43,13 @@ class HomeController extends Controller
     }
 
     /**
+     * Get Setting Page
+     */
+    public function setting(){
+      return view('setting');
+    }
+
+    /**
      * Search Page
      */
     public function search(Request $request){
@@ -52,14 +61,63 @@ class HomeController extends Controller
        ];
         
         $q = $request->q;
-        $items_per_page = 10;
+        $items_per_page = 100;
         $page = $request->page ?? 0;
-        $start_index    = $items_per_page * $page;
+        $start_index  = $items_per_page * $page;
+        $totalItems = [];
+        $items = [];
 
-        $companies = $this->fetch('https://api.companieshouse.gov.uk/search/officers','GET',['q'=>$q,'items_per_page'=>$items_per_page,'start_index'=>$start_index],$header);
+        for($i = 0; $i<10; $i++){
+              $start_index = $items_per_page * $i;
+              $records = $this->fetch('https://api.companieshouse.gov.uk/search','GET',['q'=>$q,'items_per_page'=>$items_per_page,'start_index'=>$start_index],$header);
+              if($records->items){
+                $totalItems = array_merge($totalItems,$records->items);
+              }
+              if(count($records->items) < 100){
+                 break;
+              }
+        }
+       
+        foreach($totalItems as $record){
+             $dob = null;
+             $ddate = null;
+             if(isset($record->date_of_birth) && !empty($record->date_of_birth)){
+                if(isset($record->date_of_birth->month) && isset($record->date_of_birth->year)){
+                  $dob = $record->date_of_birth->month .'-'. $record->date_of_birth->year;
+                  $ddate = $record->date_of_birth->year .'-'. sprintf("%02d", $record->date_of_birth->month) .'-'. '01';
+                }
+             }
+
+             if($request->month){
+                 if(strtolower(date('M',strtotime($ddate))) != strtolower($request->month)){
+                   continue;
+                 }
+             }
+
+             if($request->year){
+               if(strtolower(date('Y',strtotime($ddate))) != strtolower($request->year)){
+                 continue;
+               }
+             }
+
+            array_push($items,[
+               'self' => $record->links->self,
+               'company_number' => $record->company_number ?? NULL,
+               'appointment_count' => $record->appointment_count ?? NULL,
+               'title' => $record->title ?? NULL,
+               'description' => $record->description ?? NULL,
+               'address' => $record->address_snippet ?? NULL,
+               'dob'    => $dob,
+               'ddate'  => $ddate
+            ]);
+        }
 
         $data = [
-          'companies' => $companies ?? array()
+          'items_per_page' => $records->items_per_page,
+          'page_number' => $records->page_number,
+          'total_results' => $records->total_results,
+          'items' => $items,
+          'start_index' => $records->start_index
         ];
 
         return view('search',$data);
@@ -77,22 +135,58 @@ class HomeController extends Controller
       ];
 
        $officer = $this->fetch('https://api.companieshouse.gov.uk/officers/'.$id.'/appointments','GET',[],$header);
+
        if($officer->items){
-        $storeCompanyData     = [];
-        $storeUserCompanyData = [];
-        $compamyNumbers       = [];
-        foreach($officer->items as $item){
+          $storeCompanyData     = [];
+          $storeUserCompanyData = [];
+          $compamyNumbers       = [];
+
+        foreach($officer->items as $key => $item){
+          
+          $street = $item->address->address_line_1 ?? '' .' '.  $item->address->premises ?? ''  .' '. $item->address->postal_code;
+          $postalCode =$item->address->postal_code ?? '';
+
+          $registeredCompany = LandAndRegisteredCompany::
+                                         where(function($query) use ($street){
+                                             $query->whereRaw("MATCH(proprietor_1_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                                                   ->orWhereRaw("MATCH(proprietor_2_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                                                   ->orWhereRaw("MATCH(proprietor_3_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                                                   ->orWhereRaw("MATCH(proprietor_4_address_1) AGAINST('$street' IN BOOLEAN MODE)");
+                                         })
+                                         ->get();
+           print_r($registeredCompany);
+           die;
+                                         return $registeredCompany;
+        
+          $ownerShipData = $this->fetch('https://api.companieshouse.gov.uk/company/'.$item->appointed_to->company_number.'/persons-with-significant-control','GET',[],$header);
+          $ownerShip = $ownerShipData->items[0]->natures_of_control[0] ?? NULL;
+          $pricePaid = PricePaid::WhereRaw("MATCH(street) AGAINST('$street' IN BOOLEAN MODE) AND postcode = '$postalCode' ORDER BY id DESC")->first();
+          $officer->items[$key]->purchase_price = $pricePaid->price ?? NULL;
+          $officer->items[$key]->purchase_date  = $pricePaid->date_of_transfer ?? NULL;
+          $officer->items[$key]->ownership      = $ownerShip ?? NULL;
+          $officer->items[$key]->property_type  = $pricePaid->property_type ?? NULL;
+          $officer->items[$key]->lender_name    = $registeredCompany->proprietor_name_1 ?? NULL;
+          $officer->items[$key]->address        = $registeredCompany->property_address ?? NULL;
+
           array_push($compamyNumbers,$item->appointed_to->company_number); 
           array_push($storeCompanyData,[
              'company_number' => $item->appointed_to->company_number,
-             'address'        => $item->address->address_line_1 .','. $item->address->locality .','. $item->address->region .','. $item->address->country,
-             'owners_name'    => $item->appointed_to->company_name
+          //   'address'        => $item->address->address_line_1 ?? '' .','. $item->address->locality ?? '' .','. $item->address->region ?? '' .','. $item->address->country ?? '',
+            'address' => $registeredCompany->property_address ?? NULL,
+            'owners_name'    => $item->appointed_to->company_name,
+            'purchase_price'  => $pricePaid->price ?? NULL,
+            'purchase_date'   => $pricePaid->date_of_transfer ?? NULL,
+            'ownership'       => $ownerShip ?? NULL,
+            'property_type'   => $pricePaid->property_type ?? NULL,
+            'lender_name'    => $registeredCompany->proprietor_name_1 ?? NULL
           ]);
           array_push($storeUserCompanyData,[
             'user_id'  => \Auth::id(),
-            'company_number' => $item->appointed_to->company_number
+            'company_number' => $item->appointed_to->company_number,
+            'officer_id' => $id
           ]);
         }
+
           DB::beginTransaction();
         try{
           Company::whereIn('company_number',$compamyNumbers)->delete();
@@ -105,11 +199,10 @@ class HomeController extends Controller
         }
       }
 
-       $data = [
+     $data = [
          'officer' => $officer ?? array(),
          'id'      => $id
        ];
-
        return view('officer',$data);
    }
 
@@ -117,36 +210,192 @@ class HomeController extends Controller
      * Search Company Page
      */
     public function company($id){
+
       $header = [
          "authorization: 4d7c5b9d-3ff3-472d-80a7-3e44cee9563d",
          "content-type: application/json",
          "accept: application/json",
       ];
+
        $company = $this->fetch('https://api.companieshouse.gov.uk/company/'.$id,'GET',[],$header);
        $officer = $this->fetch('https://api.companieshouse.gov.uk/company/' . $id .'/officers','GET',[],$header);
+       $totalItems   = [];
+
+       foreach($officer->items as $key => $item){
+            $records = $this->fetch('https://api.companieshouse.gov.uk' . $item->links->officer->appointments,'GET',[],$header);
+            if($records->items){
+              $totalItems = array_merge($totalItems,$records->items);
+            }
+       }
+
+       foreach($totalItems as $key => $item){
+          $totalItems[$key]->purchase_price = NULL;
+          $totalItems[$key]->purchase_date  = NULL;
+          $totalItems[$key]->ownership      = NULL;
+       }
+
+            $storeCompanyData     = [];
+            $storeUserCompanyData = [];
+            $compamyNumbers       = [];
+            foreach($totalItems as $key => $item){
+
+              $street = $item->address->address_line_1 ?? '';
+              $postalCode =$item->address->postal_code ?? '';
+
+              $registeredCompany = LandAndRegisteredCompany::where('postcode',$postalCode)
+              ->where(function($query) use ($street){
+                  $query->whereRaw("MATCH(proprietor_1_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                        ->orWhereRaw("MATCH(proprietor_2_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                        ->orWhereRaw("MATCH(proprietor_3_address_1) AGAINST('$street' IN BOOLEAN MODE)")
+                        ->orWhereRaw("MATCH(proprietor_4_address_1) AGAINST('$street' IN BOOLEAN MODE)");
+              })
+              ->first();
+
+              $ownerShipData = $this->fetch('https://api.companieshouse.gov.uk/company/'.$item->appointed_to->company_number.'/persons-with-significant-control','GET',[],$header);            
+              $ownerShip = $ownerShipData->items[0]->natures_of_control[0] ?? NULL;
+
+              $pricePaid = $pricePaid = PricePaid::whereRaw("MATCH(street) AGAINST('$street' IN BOOLEAN MODE) AND postcode = '$postalCode' ORDER BY id DESC")->first();
+              $totalItems[$key]->purchase_price = $pricePaid->price ?? NULL;
+              $totalItems[$key]->purchase_date  = $pricePaid->date_of_transfer ?? NULL;
+              $totalItems[$key]->ownership      = $ownerShip ?? NULL;
+              $totalItems[$key]->property_type  = $pricePaid->property_type ?? NULL;
+              $totalItems[$key]->lender_name    = $registeredCompany->proprietor_name_1 ?? NULL;
+              $totalItems[$key]->address    = $registeredCompany->property_address ?? NULL;
+
+
+              array_push($compamyNumbers,$item->appointed_to->company_number); 
+              array_push($storeCompanyData,[
+                  'parent_company_number' => $id,
+                  'company_number' => $item->appointed_to->company_number,
+                 // 'address'        => $item->address->address_line_1 ?? '' .','. $item->address->locality ?? '' .','. $item->address->region ?? '' .','. $item->address->country ?? '',
+                  'address' => $registeredCompany->property_address ?? NULL,
+                  'owners_name'    => $item->appointed_to->company_name,
+                  'purchase_price' => $pricePaid->price ?? NULL,
+                  'purchase_date'  => $pricePaid->date_of_transfer ?? NULL,
+                  'ownership'      => $ownerShip ?? NULL,
+                  'property_type'  => $pricePaid->property_type ?? NULL,
+                  'lender_name'    => $registeredCompany->proprietor_name_1 ?? NULL
+
+              ]);
+              array_push($storeUserCompanyData,[
+                'user_id'  => \Auth::id(),
+                'company_number' => $item->appointed_to->company_number
+              ]);
+            }
+            DB::beginTransaction();
+            try{
+              Company::whereIn('company_number',$compamyNumbers)->delete();
+              CompanyUser::where('user_id',\Auth::id())->whereIn('company_number',$compamyNumbers)->delete();
+              Company::insert($storeCompanyData);
+              CompanyUser::insert($storeUserCompanyData);
+              DB::commit();
+            }catch(\Exception $e){
+              DB::rollback();
+            }
        $data = [
          'company' => $company,
-         'officer' => $officer ?? array()
+         'officers' => $totalItems ?? array(),
+         'id' => $id
        ];
+
        return view('company',$data);
    }
 
-   public function export($companyNumber=null){
-    if($companyNumber){
-      $companies = Company::where('company_number',$companyNumber)->get();
-    }else{
-      $compamyNumbers = CompanyUser::where('user_id',Auth::id())->get();
-      $companies = Company::where('company_number',array_column($companies->toarray(),'company_number'))->get();
-    }
-    return Excel::download(new CompanyExport($companies->toarray()), 'companies-'.date('Y-M-d').'.xlsx');
+     public function exportOfficer($officerId=null){
+      $compamyUserData = CompanyUser::where('officer_id',$officerId)->get();
+      $companies = Company::whereIn('company_number',array_column($compamyUserData->toarray(),'company_number'))->get();
+      return Excel::download(new CompanyExport($companies->toarray()), 'companies-'.date('Y-M-d').'.xlsx');
+     }
+
+     public function exportCompany($companyNumber){
+      $companies = Company::where('parent_company_number',$companyNumber,'company_number')->get();
+      return Excel::download(new CompanyExport($companies->toarray()), 'companies-'.date('Y-M-d').'.xlsx');
+     }
+
+   public function exportPorfolio($companyNumber=null){
+      $companyNumbers = CompanyUser::where('user_id',Auth::id())->get();
+      $companies = Company::whereIn('company_number',array_column($companyNumbers->toarray(),'company_number'))->get();
+      return Excel::download(new CompanyExport($companies->toarray()), 'companies-'.date('Y-M-d').'.xlsx');
    }
 
    public function portfolio(){
       $companyNumbers = CompanyUser::where('user_id',Auth::id())->get();
-      $companies      = Company::whereIn('company_number',array_column($companyNumbers->toarray(),'company_number'))->get();
+      $companies      = Company::whereIn('company_number',array_column($companyNumbers->toarray(),'company_number'))->orderBy('id','desc')->get();
       $data = ['companies' => $companies];
       return view('portfolio',$data);
    }
+
+   public function importFile(Request $request){
+      //  $filename = public_path('pp-2021.csv1');
+      //  ini_set('auto_detect_line_endings', TRUE);
+      //  ini_set('max_execution_time', 0);
+      //  $storeData    = collect();
+      //  $rowStored    = 540000;
+      //  $rowStart     = 540001;
+      //  $rowEnd       = 560000;
+      //  $counter      = 1;
+      //  if (($handle = fopen($filename, "r")) !== FALSE) {
+      //   while (($row_data = fgetcsv($handle)) !== FALSE) {
+
+      //     if($counter > $rowEnd){
+      //            break;
+      //     }
+
+      //     if($counter >= $rowStart && $counter <= $rowEnd ){
+      //         $storeData->push([
+      //           'transaction_unique_identifier' => $row_data['0'],
+      //           'price' => $row_data['1'],
+      //           'date_of_transfer' => $row_data['2'],
+      //           'postcode' => $row_data['3'],
+      //           'property_type' => $row_data['4'],
+      //           'old_new' => $row_data['5'],
+      //           'duration' => $row_data['6'],
+      //           'paon' => $row_data['7'],
+      //           'saon' => $row_data['8'],
+      //           'street' => $row_data['9'],
+      //           'locality' => $row_data['10'],
+      //           'city' => $row_data['11'],
+      //           'district' => $row_data['12'],
+      //           'county' => $row_data['13'],
+      //           'ppd_category_type' => $row_data['14'],
+      //           'record_status_monthly_file_only' => $row_data['15'],
+      //         ]);
+      //     }
+
+      //     $counter++;
+
+      //   }
+      //   fclose($handle);
+      // }
+
+      // foreach ($storeData->chunk(1000) as $chunk){
+      //   DB::table('price_paids')->insert($chunk->toarray());
+      // }
+
+      // return 'Success';
+
+      //INSERT INTO land_and_registered_companies (title_number,tenure,property_address,district,country,region,postcode,multiple_address_indicator,price_paid,proprietor_name_1,company_registration_no_1,proprietorship_category_1,proprietor_1_address_1,proprietor_1_address_2,proprietor_1_address_3,proprietor_name_2,company_registration_no_2,proprietorship_category_2,proprietor_2_address_1,proprietor_2_address_2,proprietor_2_address_3,proprietor_name_3,company_registration_no_3,proprietorship_category_3,proprietor_3_address_1,proprietor_3_address_2,proprietor_3_address_3,proprietor_name_4,company_registration_no_4,proprietorship_category_4,proprietor_4_address_1,proprietor_4_address_2,proprietor_4_address_3,date_proprietor_added,additional_proprietor_indicator) VALUES
+     /************************************ Previous Code */
+    }
+
+   public function importFileStore(Request $request){
+
+
+   }
+
+   function _csv_row_count($filename) {
+    ini_set('auto_detect_line_endings', TRUE);
+    $row_count = 0;
+    if (($handle = fopen($filename, "r")) !== FALSE) {
+      while (($row_data = fgetcsv($handle, 2000, ",")) !== FALSE) {
+        $row_count++;
+      }
+      fclose($handle);
+      // Exclude the headings.
+      $row_count--;
+      return $row_count;
+    }
+  }
 
 
 }

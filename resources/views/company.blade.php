@@ -1,24 +1,61 @@
 @extends('layouts.app')
 @section('content')
+    <section id="download">
+      <div class="container">
+        <div class="content">
+          <h3>Lorem ipsum dolor sit amet.</h3>
+          <div class="downloadbutton">
+              <a href="{{route('exportCompany',$id)}}" target="_blank" ><i class="fa fa-download"></i> {{__('Download')}}</a>
+          </div>
+      </div>
+    </div>
+    </section>
     <section id="portfoliopage">
       <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-             <p>Company Name</p>
-            <b>{{$company->company_name}}</b>
-            <p>Registered office address</p>
-            <b>{{ $company->registered_office_address->address_line_1 }} ,{{ $company->registered_office_address->locality }} , {{ $company->registered_office_address->postal_code }}</b>
-            <p>Company status</p>
-            <b>{{ $company->company_status }}</b>
-          </div>
-          <div class="col-md-6">
-             <p>Dissolved on</p>
-            <b>{{ $company->date_of_cessation }}</b>
-            <p>Company type</p>
-            <b>{{ $company->type }}</b>
-            <p>Incorporated on</p>
-            <b>{{ $company->date_of_creation }}</b>
-          </div>
+        <div class="wrapper">
+          <table class="table table-bordered">
+            <thead>
+                <tr>
+                      <td>Address</td>
+                      <td>Value</td>
+                      <td>Outstanding Mortgage</td>
+                      <td>Monthly Rental Income</td>
+                      <td>Monthly Mortgage Payment</td>
+                      <td>Purchase Prise</td>
+                      <td>Purchase Date</td>
+                      <td>Lender Name</td>
+                      <td>Property Type</td>
+                      <td>Owners Name (Company)</td>
+                      <td>Ownership % </td>
+                      <td>Bedrooms</td>
+                      <td>HMO / MUF</td>
+                      <td>Size (SQM - SQF)</td>
+                </tr>
+            </thead>
+            <tbody>
+              @if(count($officers) > 0)
+                @foreach($officers as $key => $item)
+                    <tr>
+                        {{-- <td>{{$item->address->address_line_1 ?? '' .','. $item->address->locality ?? '' .','. $item->address->region ?? '' .','. $item->address->country ?? '' }}</td> --}}
+                        <td>{{$item->address}}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>{{$item->purchase_price}}</td>
+                        <td>{{$item->purchase_date}}</td>
+                        <td>{{ $item->lender_name}}</td>
+                        <td>{{ $item->property_type}}</td>
+                        <td>{{$item->appointed_to->company_name}}</td>
+                        <td>{{$item->ownership}}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                @endforeach
+              @endif
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
