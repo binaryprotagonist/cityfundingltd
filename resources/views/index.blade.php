@@ -5,12 +5,9 @@
 
      <div class="container">
         <div class="content text-center">
-          <h1 class="mb-3">Lorem ipsum is simply dummy text</h1>
+          <h1 class="mb-3">Portfolio Info</h1>
           <small class="mb-5">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Fuga,
-            perferendis? Quia amet, eaque reprehenderit sint minus recusandae
-            repellendus aspernatur accusantium est perferendis, eius porro ad
-            vero nemo. architecto!
+          Portfolio Info is a property information service, we are here to help you with all your property and portfolio data requirements. Our goal Is to make your business easier and smoother and to save you time and manual labour work for you and your client…..
           </small>
           <form action="{{route('search')}}" id="search-form">
             <p class="mb-3">Search Company Name:</p>

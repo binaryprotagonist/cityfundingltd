@@ -1071,3 +1071,7 @@ footer a:hover {
     font-size: 0.875em;
     color: #dc3545 !important;
 }
+/* button Toggle css */
+.hidden {
+    display: none !important;
+}
