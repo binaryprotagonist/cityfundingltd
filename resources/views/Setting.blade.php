@@ -43,7 +43,7 @@
                           <h5 class="card-title">Starter</h5>
                           <h5 class="card-title">$10/month</h5>
                         </div>
-                        <small>365 days</small>
+                        <small class="day-remaining">365 days</small>
                         <div class="upgrade-contents">
                           <a class="btn" href="#">Upgrade</a>
                           <a href="#">Learn about this plan</a>
@@ -58,7 +58,7 @@
                           <h5 class="card-title">Starter</h5>
                           <h5 class="card-title">$10/month</h5>
                         </div>
-                        <small>365 days </small>
+                        <small class="day-remaining">365 days </small>
                         <div class="upgrade-contents">
                           <a class="btn" href="#">Upgrade</a>
                           <a href="#">Learn about this plan</a>
@@ -73,7 +73,7 @@
                           <h5 class="card-title">Starter</h5>
                           <h5 class="card-title">$10/month</h5>
                         </div>
-                        <small>365 days </small>
+                        <small class="day-remaining">365 days </small>
                         <div class="upgrade-contents">
                           <a class="btn" href="#">Upgrade</a>
                           <a href="#">Learn about this plan</a>
@@ -196,6 +196,8 @@
       </div>
     </section>
 @endsection
+@push('css')
+
 @push('js')
     <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
