@@ -22,16 +22,34 @@
             </form>
           </div>
           <div class="col-md-6">
-            <form action="{{route('search')}}" method="get">
-              <div class="input-group" id="box-right">
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="{{__('Type here to filter results...')}}"
-                  name="filter"
-                  value="{{Request::get('filter')}}"
-                />
-              </div>
+            <form action="{{route('search')}}" id="filter-form" method="get">
+             <input type="hidden" name="q" value="{{Request::get('q')}}">
+             <div class="row">
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="{{__('Born Year')}}"
+                      name="year"
+                      value="{{Request::get('year')}}"
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="{{__('Born month')}}"
+                      name="month"
+                      value="{{Request::get('month')}}"
+                      autocomplete="off"
+                    />
+                  </div>
+                </div>
+             </div>
             </form>
           </div>
         </div>
@@ -41,10 +59,11 @@
     <!-- data table -->
     <section id="table">
       <div class="container">
-            @if($companies->total_results > 0)
-              @foreach($companies->items as $item)
+            @if($total_results > 0)
+              @foreach($items as $item)
+                @php $item = (Object) $item @endphp
                     <div style="border-bottom:1px solid #e7e7e7">
-                       @php $arr = explode('/',$item->links->self);@endphp
+                       @php $arr = explode('/',$item->self);@endphp
                        @if(isset($item->company_number)  && !empty($item->company_number))
                         <a href="{{ route('company',$arr['2'])}}">{{$item->title}}</a>
                        @else
@@ -52,30 +71,30 @@
                        @endif
                       <br/>
                       <small>{{$item->description}}</small>
-                      <p>{{$item->address_snippet}}</p>
+                      <p>{{$item->address}}</p>
                     </div>
               @endforeach
-            <nav aria-label="Page navigation example">
+            {{-- <nav aria-label="Page navigation example">
               <ul class="pagination">
                   @php
-                  $total_pages  = ceil($companies->total_results / $companies->items_per_page);  
+                  $total_pages  = ceil($total_results / $items_per_page);  
                   $dots = false;
                   for ($i=1; $i<=$total_pages; $i++) {
                     if($i <= 11){
-                      if ($i==$companies->page_number){
-                        echo '<li class="page-item active"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.$i.'</a></li>';
+                      if ($i==$page_number){
+                        echo '<li class="page-item active"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q'),'year'=>Request::get('year'),'month'=>Request::get('month')]). '">'.$i.'</a></li>';
                       }else{
                         if ($i <= 10) { 
-                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.$i.'</a></li>';
+                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q'),'year'=>Request::get('year'),'month'=>Request::get('month')]). '">'.$i.'</a></li>';
                         } elseif ($i > 10) {
-                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q')]). '">'.__("Next").'</a></li>';
+                          echo '<li class="page-item"><a class="page-link" href="' . route('search',['page'=>$i,'q'=>Request::get('q'),'year'=>Request::get('year'),'month'=>Request::get('month')]). '">'.__("Next").'</a></li>';
                         }
                       }
                     }
                   }  
                   @endphp
               </ul>
-            </nav>
+            </nav> --}}
             @else
             @endif
           </tbody>
@@ -270,6 +289,7 @@
     </section>
 @endsection
 @push('css')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      @if(Auth::check())
       <style>
       section#table tr:nth-child(n + 3) {
@@ -279,4 +299,27 @@
      @endif
 @endpush
 @push('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+      $('input[name="year"]').on('change',function(e){
+           e.preventDefault();
+           $('#filter-form').submit();
+      });
+      $('input[name="month"]').on('change',function(e){
+           e.preventDefault();
+           $('#filter-form').submit();
+      });
+      $('input[name="year"]').datepicker({
+          format: "yyyy",
+          viewMode: "years", 
+          minViewMode: "years",
+          autoclose:true //to close picker once year is selected
+      });
+      $('input[name="month"]').datepicker({
+          format: "M",
+          viewMode: "months", 
+          minViewMode: "months",
+          autoclose:true //to close picker once year is selected
+      });
+    </script>
 @endpush

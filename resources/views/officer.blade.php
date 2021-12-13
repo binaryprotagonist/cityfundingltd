@@ -5,7 +5,7 @@
         <div class="content">
           <h3>Lorem ipsum dolor sit amet.</h3>
           <div class="downloadbutton">
-              <a href="{{route('export',$id)}}"><i class="fa fa-download"></i> {{__('Download')}}</a>
+              <a href="{{route('exportOfficer',$id)}}" target="_blank"><i class="fa fa-download"></i> {{__('Download')}}</a>
           </div>
       </div>
     </div>
@@ -36,17 +36,18 @@
               @if($officer->total_results > 0)
                 @foreach($officer->items as $key => $item)
                     <tr>
-                        <td>{{$item->address->address_line_1 .','. $item->address->locality .','. $item->address->region .','. $item->address->country }}</td>
+                        {{-- <td>{{$item->address->address_line_1 ?? '' .','. $item->address->locality ?? '' .','. $item->address->region ?? '' .','. $item->address->country ?? '' }}</td> --}}
+                        <td>{{$item->address}}</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
+                        <td>{{$item->purchase_price}}</td>
+                        <td>{{$item->purchase_date}}</td>
+                        <td>{{ $item->lender_name}}</td>
+                        <td>{{ $item->property_type}}</td>
                         <td>{{$item->appointed_to->company_name}}</td>
-                        <td>-</td>
+                        <td>{{$item->ownership}}</td>
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>

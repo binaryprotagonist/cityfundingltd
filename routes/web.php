@@ -40,10 +40,20 @@ Route::get('/', [HomeController::class, 'index'])->name('index');
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
 Route::get('/search', [HomeController::class, 'search'])->name('search');
+Route::get('/setting', [HomeController::class, 'setting'])->name('setting');
+
 Route::get('/officers/{id}/appointments', [HomeController::class, 'officers'])->name('officers');
 Route::get('/company/{id}', [HomeController::class, 'company'])->name('company');
-Route::get('/company/export/{id?}', [HomeController::class, 'export'])->name('export');
+Route::get('/porfolio/export', [HomeController::class, 'exportPorfolio'])->name('exportPorfolio');
+Route::get('/company/export/{companyNumber}', [HomeController::class, 'exportCompany'])->name('exportCompany');
+Route::get('/officer/export/{officerId}', [HomeController::class, 'exportOfficer'])->name('exportOfficer');
+
 Route::get('/portfolio', [HomeController::class, 'portfolio'])->name('portfolio');
+
+Route::get('/import/file', [HomeController::class, 'importFile'])->name('importFile');
+Route::any('/import/file/store', [HomeController::class, 'importFileStore'])->name('importFileStore');
+
+
 
 
 
