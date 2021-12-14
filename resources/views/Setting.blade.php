@@ -22,65 +22,25 @@
               <div class="swiper card-slider">
                 <h4>Plan</h4>
                 <div class="swiper-wrapper">
-                  <div class="swiper-slide slide">
-                    <div class="card" id="remain">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Free</h5>
-                          <h5 class="card-title">$10/month</h5>
-                        </div>
-                        <small>36 days remaining</small>
-                        <a href="#" class="btn btn-borderd"
-                          >Cancel Subscription</a
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <h5 class="card-title">$10/month</h5>
-                        </div>
-                        <small class="day-remaining">365 days</small>
-                        <div class="upgrade-contents">
-                          <a class="btn" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
+                   @foreach($plans as $key => $plan)
+                    <div class="swiper-slide slide">
+                      <div class="card">
+                        <div class="card-body">
+                          <div class="contents">
+                            <h4 class="card-title">{{$plan->title}}</h4>
+                            <br/>
+                            <h5 class="card-title">${{$plan->monthly}}/Monthly</h5>
+                            <h5 class="card-title">${{$plan->yearly}}/Yearly</h5>
+                          </div>
+                          <small>365 days</small>
+                          <div class="upgrade-contents">
+                            <a class="btn" href="{{route('subscribePlan',$plan->id)}}">{{__('Upgrade')}}</a>
+                            <a href="#">Learn about this plan</a>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <h5 class="card-title">$10/month</h5>
-                        </div>
-                        <small class="day-remaining">365 days </small>
-                        <div class="upgrade-contents">
-                          <a class="btn" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <h5 class="card-title">$10/month</h5>
-                        </div>
-                        <small class="day-remaining">365 days </small>
-                        <div class="upgrade-contents">
-                          <a class="btn" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                   @endforeach
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
@@ -196,8 +156,6 @@
       </div>
     </section>
 @endsection
-@push('css')
-
 @push('js')
     <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
     <script src="js/bootstrap.min.js"></script>

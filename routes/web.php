@@ -55,6 +55,10 @@ Route::get('/import/file', [HomeController::class, 'importFile'])->name('importF
 Route::any('/import/file/store', [HomeController::class, 'importFileStore'])->name('importFileStore');
 
 
+Route::get('/subscribe/plan/{id}', [HomeController::class, 'subscribePlan'])->name('subscribePlan');
+Route::get('/gocardless/mandate/success', [HomeController::class, 'mandateSuccess'])->name('mandateSuccess');
+
+
 
 
 

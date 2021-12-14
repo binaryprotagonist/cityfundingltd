@@ -10,6 +10,9 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\PricePaid;
+use Illuminate\Support\Facades\Session;
+use App\Models\Plan;
+use App\Http\Controllers\GoCardLessController;
 use App\Models\LandAndRegisteredCompany;
 use Auth;
 use DB;
@@ -45,8 +48,9 @@ class HomeController extends Controller
     /**
      * Get Setting Page
      */
-    public function setting(){
-      return view('setting');
+    public function setting(Request $request){
+      $data['plans'] = Plan::orderBy('id','asc')->get();
+      return view('setting',$data);
     }
 
     /**
@@ -325,6 +329,81 @@ class HomeController extends Controller
       return view('portfolio',$data);
    }
 
+   public function subscribePlan($id){
+    
+    $plan = Plan::find($id);
+    $user = User::find(Auth::id());
+    $preSubscription = Subscription::where('user_id',$user->id)->where('subscription_status','1')->first();
+    
+    $goCardLessController = new GoCardLessController;
+
+    if(empty($user->mandate_id) || is_null($user->mandate_id)){
+       $payload = [
+          "first_name"  => $user->first_name,
+          "last_name" => $user->last_name,
+          "email" => $user->email,
+          "address" => $user->address,
+          "city" => $user->city,
+          "postal_code" => $user->postal_code,
+          'session_id' => Session::getId()
+       ];
+       $response = $goCardLessController->createMandate($payload);
+       if($response['status']){
+           Session::put('plan_id',$id);
+           Session::put('redirectflow_id',$response['redirectflow_id']);
+           return redirect($response['redirectflow_url']);
+       }else{
+           return back()->with('status',false)->with('message','Failed to subscribe plan');
+       }
+    }
+
+    $subscription = new Subscription;
+    $subscription->user_id = \Auth::id();
+    $subscription->plan_id = $plan->id;
+    $subscription->plan_title = $plan->title;
+    $subscription->plan_property = $plan->property;
+    $subscription->subscription_date = date('Y-m-d H:i:s');
+    $subscription->subscription_status = 0;
+    $subscription->invoice_id = NULL;
+    $subscription->save();
+
+    $payload = [
+        'intervalUnit' => 'monthly',
+        'amount'       => $plan->monthly,
+        'name'         => $plan->title,
+        'mandateId'    => $user->mandate_id,
+        'orderId'      => $subscription->invoice_id
+    ];
+
+    $response = $goCardLessController->createSubscription($payload);
+    
+    if($response['status']){
+      if($response['data']->api_response->status_code == '200' && $response['data']->api_response->body->subscriptions->status == 'cancelled' ){
+        $subscriptionId = $response['data']->api_response->body->subscriptions->id;
+        $subscription->subscription_status = '1';
+        $subscription->subscription_cancel_date = date('Y-m-d H:i:s');
+        $subscription->update();
+        return back()->with('status',true)->with('message','Plan Cancelled Successful');
+   }
+    }
+
+    return redirect()->route('subscribePlan')->with('status',true)->with('message','Failed to subscribe plan');
+
+   }
+
+   public function mandateSuccess(Request $request){
+     $goCardLessController = new GoCardLessController;
+     $response = $goCardLessController->getMandateId($request->redirect_flow_id,Session::getId());
+     if($response['status']){
+        $user = User::find(\Auth::id());
+        $user->mandate_id = $response['mandateId'];
+        $user->save();
+        return redirect()->route('subscribePlan',Session::get('plan_id'));
+     }else{
+        return redirect()->route('setting')->with('status',true)->with('message','Failed to subscribe');
+     }
+   }
+
    public function importFile(Request $request){
       //  $filename = public_path('pp-2021.csv1');
       //  ini_set('auto_detect_line_endings', TRUE);
@@ -379,8 +458,6 @@ class HomeController extends Controller
     }
 
    public function importFileStore(Request $request){
-
-
    }
 
    function _csv_row_count($filename) {

@@ -8,10 +8,8 @@
             <div class="sidemenu" id="rborder">
               <h2>{{__('Settings')}}</h2>
               <ul>
-                <li style="list-style: none">
-                  <a href="Setting.html">{{__('Subscription')}}</a>
-                </li>
-                <li><a class="sideactive" href="#">{{__('Personal Info')}}</a></li>
+                <li style="list-style: none"><a href="{{route('setting')}}">{{__('Subscription')}}</a></li>
+                <li><a class="sideactive" href="{{route('profile')}}">{{__('Personal Info')}}</a></li>
               </ul>
             </div>
           </div>
