@@ -378,13 +378,20 @@ class HomeController extends Controller
     $response = $goCardLessController->createSubscription($payload);
     
     if($response['status']){
-      if($response['data']->api_response->status_code == '200' && $response['data']->api_response->body->subscriptions->status == 'cancelled' ){
-        $subscriptionId = $response['data']->api_response->body->subscriptions->id;
-        $subscription->subscription_status = '1';
-        $subscription->subscription_cancel_date = date('Y-m-d H:i:s');
-        $subscription->update();
-        return back()->with('status',true)->with('message','Plan Cancelled Successful');
-   }
+              $subscriptionId = $response['data']->api_response->body->subscriptions->id;
+              $subscription = new Subscription;
+              $subscription->subscription_id = $subscriptionId;
+              $subscription->subscription_status = '1';
+              $subscription->save();
+              if($preSubscription){
+                $response = $goCardLessController->cancelSubscription($preSubscription->subscription_id);
+                if($response['data']){
+                   $preSubscription->subscription_status = '2';
+                   $preSubscription->subscription_cancel_date = date('Y-m-d H:i:s');
+                   $preSubscription->update();
+                }
+              };
+        return back()->with('status',true)->with('message','Plan Subscribed Successful');
     }
 
     return redirect()->route('subscribePlan')->with('status',true)->with('message','Failed to subscribe plan');

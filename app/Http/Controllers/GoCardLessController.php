@@ -98,4 +98,18 @@ class GoCardLessController extends Controller
         }
     }
 
+    public function cancelSubscription($subscriptionId){
+        try{
+            $response = $this->client->subscriptions()->cancel($subscriptionId);
+            $response = json_encode($response);
+            $response = json_decode($response);
+            if($response->api_response->status_code == '200' && $response->api_response->body->subscriptions->status == 'cancelled' ){
+               return ['status'=>true,'message'=>'Success','data'=>$response];
+            }
+        }catch(\Exception $e){
+            return ['status'=>false,'message'=>$e->getMessage()];
+        }
+           return [ 'status'=>false, 'message' => 'Something went wrong' ];
+    }
+
 }

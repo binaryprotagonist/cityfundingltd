@@ -34,7 +34,8 @@
                           </div>
                           <small>365 days</small>
                           <div class="upgrade-contents">
-                            <a class="btn" href="{{route('subscribePlan',$plan->id)}}">{{__('Upgrade')}}</a>
+                            <a class="btn">{{__('Upgrade')}}</a>
+                            <a class="btn" data-bs-toggle="modal" data-bs-target="#upgrade" href="#">Upgrade</a>
                             <a href="#">Learn about this plan</a>
                           </div>
                         </div>
@@ -152,8 +153,29 @@
               </table>
             </div>
           </div>
+          <!-- modal -->
+
         </div>
       </div>
+<div class="modal fade" id="upgrade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Changing Plan</h5>
+        
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      <p style="color:#000">You are opting to change plan from Free of $10 to Pro of $40.</p>
+      <p class="text-gray-900 mb-2"> You will be redirected to PayPal gateway for further subscription process. There you can choose to login with PayPal account or create an account to pay as a guest if supported in your country. </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Proceed</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
     </section>
 @endsection
 @push('js')
