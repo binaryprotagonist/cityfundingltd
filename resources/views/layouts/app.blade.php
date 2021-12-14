@@ -495,6 +495,14 @@
         window.onbeforeunload = function (evt) { 
            $('body').prepend('<div class="loading">Loading&#8230;</div>');
         } 
+      @if(Session::get('message'))
+        @if(Session::get('status'))
+           toastr.success("{{Session::get('message')}}");
+        @else
+           toastr.error("{{Session::get('message')}}");
+        @endif
+      @endif
     </script>
+    
   </body>
 </html>

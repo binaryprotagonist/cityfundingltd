@@ -50,6 +50,11 @@ class HomeController extends Controller
      */
     public function setting(Request $request){
       $data['plans'] = Plan::orderBy('id','asc')->get();
+      if($data['plans']->toarray()){
+           foreach($data['plans']  as $key => $plan){
+              $data['plans'][$key]->unique_id = encrypt($plan->id);
+           }
+      }
       return view('setting',$data);
     }
 
@@ -157,10 +162,7 @@ class HomeController extends Controller
                                                    ->orWhereRaw("MATCH(proprietor_3_address_1) AGAINST('$street' IN BOOLEAN MODE)")
                                                    ->orWhereRaw("MATCH(proprietor_4_address_1) AGAINST('$street' IN BOOLEAN MODE)");
                                          })
-                                         ->get();
-           print_r($registeredCompany);
-           die;
-                                         return $registeredCompany;
+                                         ->first();
         
           $ownerShipData = $this->fetch('https://api.companieshouse.gov.uk/company/'.$item->appointed_to->company_number.'/persons-with-significant-control','GET',[],$header);
           $ownerShip = $ownerShipData->items[0]->natures_of_control[0] ?? NULL;
@@ -329,32 +331,40 @@ class HomeController extends Controller
       return view('portfolio',$data);
    }
 
-   public function subscribePlan($id){
+   public function subscribePlan(Request $request){
     
-    $plan = Plan::find($id);
+    $planId   = decrypt($request->plan_id);
+    $interval = $request->interval;
+    
+    $plan = Plan::find($planId);
     $user = User::find(Auth::id());
     $preSubscription = Subscription::where('user_id',$user->id)->where('subscription_status','1')->first();
-    
-    $goCardLessController = new GoCardLessController;
+    $paidPlan        = $plan->id == '1' ? false : true;
 
-    if(empty($user->mandate_id) || is_null($user->mandate_id)){
-       $payload = [
-          "first_name"  => $user->first_name,
-          "last_name" => $user->last_name,
-          "email" => $user->email,
-          "address" => $user->address,
-          "city" => $user->city,
-          "postal_code" => $user->postal_code,
-          'session_id' => Session::getId()
-       ];
-       $response = $goCardLessController->createMandate($payload);
-       if($response['status']){
-           Session::put('plan_id',$id);
-           Session::put('redirectflow_id',$response['redirectflow_id']);
-           return redirect($response['redirectflow_url']);
-       }else{
-           return back()->with('status',false)->with('message','Failed to subscribe plan');
-       }
+    if($paidPlan){
+
+        $goCardLessController = new GoCardLessController;
+    
+        if(empty($user->mandate_id) || is_null($user->mandate_id)){
+          $payload = [
+              "first_name"  => $user->first_name,
+              "last_name" => $user->last_name,
+              "email" => $user->email,
+              "address" => $user->address,
+              "city" => $user->city,
+              "postal_code" => $user->postal_code,
+              'session_id' => Session::getId()
+          ];
+          $response = $goCardLessController->createMandate($payload);
+          if($response['status']){
+              Session::put('plan_id',$planId);
+              Session::put('redirectflow_id',$response['redirectflow_id']);
+              return redirect($response['redirectflow_url']);
+          }else{
+              return back()->with('status',false)->with('message','Failed to subscribe plan');
+          }
+        }
+
     }
 
     $subscription = new Subscription;
@@ -366,6 +376,7 @@ class HomeController extends Controller
     $subscription->subscription_status = 0;
     $subscription->invoice_id = NULL;
     $subscription->save();
+
 
     $payload = [
         'intervalUnit' => 'monthly',
@@ -379,7 +390,6 @@ class HomeController extends Controller
     
     if($response['status']){
               $subscriptionId = $response['data']->api_response->body->subscriptions->id;
-              $subscription = new Subscription;
               $subscription->subscription_id = $subscriptionId;
               $subscription->subscription_status = '1';
               $subscription->save();

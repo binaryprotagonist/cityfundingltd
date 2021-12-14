@@ -62,7 +62,7 @@
             @if($total_results > 0)
               @foreach($items as $item)
                 @php $item = (Object) $item @endphp
-                    <div style="border-bottom:1px solid #e7e7e7">
+                    <div class="blur" style="border-bottom:1px solid #e7e7e7">
                        @php $arr = explode('/',$item->self);@endphp
                        @if(isset($item->company_number)  && !empty($item->company_number))
                         <a href="{{ route('company',$arr['2'])}}">{{$item->title}}</a>
@@ -292,9 +292,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" integrity="sha512-mSYUmp1HYZDFaVKK//63EcZq4iFWFjxSL+Z3T/aCt4IO9Cejm03q3NKKYN6pFQzY0SBOr8h+eCIAZHPXcpZaNw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      @if(Auth::check())
       <style>
-      section#table tr:nth-child(n + 3) {
+       .blur:nth-child(n + 3) {
           filter: none !important;
-      }
+       }
       </style>
      @endif
 @endpush
