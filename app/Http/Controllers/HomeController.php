@@ -10,6 +10,9 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\PricePaid;
+use Illuminate\Support\Facades\Session;
+use App\Models\Plan;
+use App\Http\Controllers\GoCardLessController;
 use App\Models\LandAndRegisteredCompany;
 use Auth;
 use DB;
@@ -45,8 +48,14 @@ class HomeController extends Controller
     /**
      * Get Setting Page
      */
-    public function setting(){
-      return view('setting');
+    public function setting(Request $request){
+      $data['plans'] = Plan::orderBy('id','asc')->get();
+      if($data['plans']->toarray()){
+           foreach($data['plans']  as $key => $plan){
+              $data['plans'][$key]->unique_id = encrypt($plan->id);
+           }
+      }
+      return view('setting',$data);
     }
 
     /**
@@ -153,10 +162,7 @@ class HomeController extends Controller
                                                    ->orWhereRaw("MATCH(proprietor_3_address_1) AGAINST('$street' IN BOOLEAN MODE)")
                                                    ->orWhereRaw("MATCH(proprietor_4_address_1) AGAINST('$street' IN BOOLEAN MODE)");
                                          })
-                                         ->get();
-           print_r($registeredCompany);
-           die;
-                                         return $registeredCompany;
+                                         ->first();
         
           $ownerShipData = $this->fetch('https://api.companieshouse.gov.uk/company/'.$item->appointed_to->company_number.'/persons-with-significant-control','GET',[],$header);
           $ownerShip = $ownerShipData->items[0]->natures_of_control[0] ?? NULL;
@@ -325,6 +331,96 @@ class HomeController extends Controller
       return view('portfolio',$data);
    }
 
+   public function subscribePlan(Request $request){
+    
+    $planId   = decrypt($request->plan_id);
+    $interval = $request->interval;
+    
+    $plan = Plan::find($planId);
+    $user = User::find(Auth::id());
+    $preSubscription = Subscription::where('user_id',$user->id)->where('subscription_status','1')->first();
+    $paidPlan        = $plan->id == '1' ? false : true;
+
+    if($paidPlan){
+
+        $goCardLessController = new GoCardLessController;
+    
+        if(empty($user->mandate_id) || is_null($user->mandate_id)){
+          $payload = [
+              "first_name"  => $user->first_name,
+              "last_name" => $user->last_name,
+              "email" => $user->email,
+              "address" => $user->address,
+              "city" => $user->city,
+              "postal_code" => $user->postal_code,
+              'session_id' => Session::getId()
+          ];
+          $response = $goCardLessController->createMandate($payload);
+          if($response['status']){
+              Session::put('plan_id',$planId);
+              Session::put('redirectflow_id',$response['redirectflow_id']);
+              return redirect($response['redirectflow_url']);
+          }else{
+              return back()->with('status',false)->with('message','Failed to subscribe plan');
+          }
+        }
+
+    }
+
+    $subscription = new Subscription;
+    $subscription->user_id = \Auth::id();
+    $subscription->plan_id = $plan->id;
+    $subscription->plan_title = $plan->title;
+    $subscription->plan_property = $plan->property;
+    $subscription->subscription_date = date('Y-m-d H:i:s');
+    $subscription->subscription_status = 0;
+    $subscription->invoice_id = NULL;
+    $subscription->save();
+
+
+    $payload = [
+        'intervalUnit' => 'monthly',
+        'amount'       => $plan->monthly,
+        'name'         => $plan->title,
+        'mandateId'    => $user->mandate_id,
+        'orderId'      => $subscription->invoice_id
+    ];
+
+    $response = $goCardLessController->createSubscription($payload);
+    
+    if($response['status']){
+              $subscriptionId = $response['data']->api_response->body->subscriptions->id;
+              $subscription->subscription_id = $subscriptionId;
+              $subscription->subscription_status = '1';
+              $subscription->save();
+              if($preSubscription){
+                $response = $goCardLessController->cancelSubscription($preSubscription->subscription_id);
+                if($response['data']){
+                   $preSubscription->subscription_status = '2';
+                   $preSubscription->subscription_cancel_date = date('Y-m-d H:i:s');
+                   $preSubscription->update();
+                }
+              };
+        return back()->with('status',true)->with('message','Plan Subscribed Successful');
+    }
+
+    return redirect()->route('subscribePlan')->with('status',true)->with('message','Failed to subscribe plan');
+
+   }
+
+   public function mandateSuccess(Request $request){
+     $goCardLessController = new GoCardLessController;
+     $response = $goCardLessController->getMandateId($request->redirect_flow_id,Session::getId());
+     if($response['status']){
+        $user = User::find(\Auth::id());
+        $user->mandate_id = $response['mandateId'];
+        $user->save();
+        return redirect()->route('subscribePlan',Session::get('plan_id'));
+     }else{
+        return redirect()->route('setting')->with('status',true)->with('message','Failed to subscribe');
+     }
+   }
+
    public function importFile(Request $request){
       //  $filename = public_path('pp-2021.csv1');
       //  ini_set('auto_detect_line_endings', TRUE);
@@ -379,8 +475,6 @@ class HomeController extends Controller
     }
 
    public function importFileStore(Request $request){
-
-
    }
 
    function _csv_row_count($filename) {

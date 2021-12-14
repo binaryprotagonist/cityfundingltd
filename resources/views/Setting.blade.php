@@ -12,7 +12,7 @@
                   <a class="sideactive" href="#subscription">Subscription</a>
                 </li>
                 <li style="list-style: none">
-                  <a href="personal.html">Personal info</a>
+                  <a href="{{route('profile')}}">Personal info</a>
                 </li>
               </ul>
             </div>
@@ -22,77 +22,25 @@
               <div class="swiper card-slider">
                 <h4>Plan</h4>
                 <div class="swiper-wrapper">
-                  <div class="swiper-slide slide">
-                    <div class="card" id="remain">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Free</h5>
-                          <div class="price">
-                          <h5 class="card-title">$10/month</h5>
-                          <h5 class="card-title">$100/year</h5>
+                   @foreach($plans as $key => $plan)
+                      <div class="swiper-slide slide">
+                        <div class="card">
+                          <div class="card-body">
+                            <div class="contents">
+                              <h5 class="card-title">{{$plan->title}}</h5>
+                              <div class="price">
+                              <h5 class="card-title">$ {{$plan->monthly}} /Monthly</h5>
+                              <h5 class="card-title">$ {{$plan->yearly}} /Yearly</h5>
+                              </div>
+                            </div>
+                            <small class="day-remaining">{{$plan->property }} Properties can be views </small>
+                            <div class="upgrade-contents">
+                              <a class="btn planModal" data-id="{{$plan->id}}" href="javascript:void(0)">Upgrade</a>
+                            </div>
                           </div>
                         </div>
-                        <small>36 days remaining</small>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#upgrade" class="btn btn-borderd"
-                          >Cancel Subscription</a
-                        >
                       </div>
-                    </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <div class="price">
-                          <h5 class="card-title">$10/month</h5>
-                          <h5 class="card-title">$100/year</h5>
-                          </div>
-                        </div>
-                        <small class="day-remaining">365 days</small>
-                        <div class="upgrade-contents">
-                          <a class="btn" data-bs-toggle="modal" data-bs-target="#upgrade" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <div class="price">
-                          <h5 class="card-title">$10/month</h5>
-                          <h5 class="card-title">$100/year</h5>
-                          </div>
-                        </div>
-                        <small class="day-remaining">365 days </small>
-                        <div class="upgrade-contents">
-                          <a class="btn" data-bs-toggle="modal" data-bs-target="#upgrade" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="swiper-slide slide">
-                    <div class="card">
-                      <div class="card-body">
-                        <div class="contents">
-                          <h5 class="card-title">Starter</h5>
-                          <div class="price">
-                          <h5 class="card-title">$10/month</h5>
-                          <h5 class="card-title">$100/year</h5>
-                          </div>
-                        </div>
-                        <small class="day-remaining">365 days </small>
-                        <div class="upgrade-contents">
-                          <a class="btn" data-bs-toggle="modal" data-bs-target="#upgrade" href="#">Upgrade</a>
-                          <a href="#">Learn about this plan</a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                   @endforeach
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
@@ -208,32 +156,42 @@
 
         </div>
       </div>
-<div class="modal fade" id="upgrade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="planModal" tabindex="-1" aria-labelledby="planModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Changing Plan</h5>
-        
+        <h5 class="modal-title" id="planModalLabel">Changing Plan</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-      <p style="color:#000">You are opting to change plan from Free of $10 to Pro of $40.</p>
-      <p class="text-gray-900 mb-2"> You will be redirected to PayPal gateway for further subscription process. There you can choose to login with PayPal account or create an account to pay as a guest if supported in your country. </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Proceed</button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-      </div>
+       <form action="{{route('subscribePlan')}}" method="GET">
+          <div class="modal-body">
+              <p style="color:#000" id="property"></p>
+                  @csrf
+                  <input type="hidden" id="plan_id" name="plan_id" value="" />
+                  <div class="form-group">
+                    <label>
+                      <input type="radio" name="interval" value="monthly" checked/> $<b id="monthly"></b> /Monthly
+                      <input type="radio" name="interval" value="yearly" />  $<b id="yearly"></b> /Yearly
+                    </label>
+                  </div>  
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Proceed</button>
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>   
     </div>
   </div>
 </div>
     </section>
 @endsection
-@push('css')
-
 @push('js')
     <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script>
+      var plans = @json($plans);
+      console.log(plans);
+    </script>
     <script>
       var swiper = new Swiper(".card-slider", {
         centeredSlides: false,
@@ -261,6 +219,21 @@
             slidesPerView: 3,
           },
         },
+      });
+    </script>
+    <script>
+      $('.planModal').on('click',function(e){
+          let planId = $(this).data('id');
+          let modal  = $('#planModal');
+          let plan   = plans.find(function(plan){
+                return plan.id == planId;
+          });
+          modal.find('#property').text(plan.property + ' Property can be accessible');
+          modal.find('#plan_id').val(plan.unique_id);
+          modal.find('#planModalLabel').text(plan.title);
+          modal.find('#monthly').text(plan.monthly);
+          modal.find('#yearly').text(plan.yearly);
+          modal.modal('show');
       });
     </script>
 @endpush
