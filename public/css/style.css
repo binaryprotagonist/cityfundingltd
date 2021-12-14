@@ -1107,3 +1107,6 @@ section#setting div#upgrade .modal-dialog {
     max-width: 500px;
     margin: 1.75rem auto;
 }
+.blur:nth-child(n + 3) {
+    filter: blur(0.5rem);
+}

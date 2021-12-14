@@ -62,7 +62,7 @@
             @if($total_results > 0)
               @foreach($items as $item)
                 @php $item = (Object) $item @endphp
-                    <div style="border-bottom:1px solid #e7e7e7">
+                    <div class="blur" style="border-bottom:1px solid #e7e7e7">
                        @php $arr = explode('/',$item->self);@endphp
                        @if(isset($item->company_number)  && !empty($item->company_number))
                         <a href="{{ route('company',$arr['2'])}}">{{$item->title}}</a>
