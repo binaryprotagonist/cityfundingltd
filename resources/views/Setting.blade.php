@@ -27,7 +27,10 @@
                       <div class="card-body">
                         <div class="contents">
                           <h5 class="card-title">Free</h5>
+                          <div class="price">
                           <h5 class="card-title">$10/month</h5>
+                          <h5 class="card-title">$100/year</h5>
+                          </div>
                         </div>
                         <small>36 days remaining</small>
                         <a href="#" data-bs-toggle="modal" data-bs-target="#upgrade" class="btn btn-borderd"
@@ -41,7 +44,10 @@
                       <div class="card-body">
                         <div class="contents">
                           <h5 class="card-title">Starter</h5>
+                          <div class="price">
                           <h5 class="card-title">$10/month</h5>
+                          <h5 class="card-title">$100/year</h5>
+                          </div>
                         </div>
                         <small class="day-remaining">365 days</small>
                         <div class="upgrade-contents">
@@ -56,7 +62,10 @@
                       <div class="card-body">
                         <div class="contents">
                           <h5 class="card-title">Starter</h5>
+                          <div class="price">
                           <h5 class="card-title">$10/month</h5>
+                          <h5 class="card-title">$100/year</h5>
+                          </div>
                         </div>
                         <small class="day-remaining">365 days </small>
                         <div class="upgrade-contents">
@@ -71,7 +80,10 @@
                       <div class="card-body">
                         <div class="contents">
                           <h5 class="card-title">Starter</h5>
+                          <div class="price">
                           <h5 class="card-title">$10/month</h5>
+                          <h5 class="card-title">$100/year</h5>
+                          </div>
                         </div>
                         <small class="day-remaining">365 days </small>
                         <div class="upgrade-contents">

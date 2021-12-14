@@ -652,7 +652,7 @@ section#setting .billing a {
 section#setting .contents {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: top;
 }
 section#setting .contents small {
     font-size: 14px;
@@ -733,7 +733,7 @@ section#setting .card a {
     font-size: 14px;
 }
 .card {
-    height: 150px;
+    height: 160px;
     border-radius: 18px;
     background: #000aff;
     border: 1px solid #000aff;
@@ -1106,4 +1106,10 @@ section#setting div#upgrade .modal-footer {
 section#setting div#upgrade .modal-dialog {
     max-width: 500px;
     margin: 1.75rem auto;
+}
+.blur:nth-child(n + 3) {
+    filter: blur(0.5rem);
+}
+.price h5 {
+    font-size: 14px;
 }
